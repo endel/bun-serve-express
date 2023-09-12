@@ -7,6 +7,10 @@ import { setTimeout } from "timers/promises";
 const PORT = 8080;
 const app = express();
 
+app.use('/matchmake', (req, res) => {
+  res.json({ path: req.path });
+});
+
 app.get('/', (req, res) => {
   console.log("GET /", { req, res });
   res.header("Cache-Control", "no-cache, no-store, must-revalidate");

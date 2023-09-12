@@ -73,6 +73,22 @@ describe("Express API Compatibility", () => {
       assert.strictEqual(undefined, response.headers['something']);
     });
 
+    it("set() object", async () => {
+      app.get("/headers", (req, res) => {
+        res.set({
+          One: "1",
+          Two: "2",
+          Three: "3"
+        });
+        res.end();
+      });
+
+      const response = await http.get(`${URL}/headers`);
+      assert.strictEqual("1", response.headers['one']);
+      assert.strictEqual("2", response.headers['two']);
+      assert.strictEqual("3", response.headers['three']);
+    });
+
     it("json()", async () => {
       app.get("/json", (req, res) => {
         res.json({ hello: "world" });

@@ -182,18 +182,18 @@ export class ServerResponse extends http.OutgoingMessage {
     return response.format.apply(this, arguments);
   }
 
-  set(name: string | object, value?: string | string[]) {
-    if (typeof(name) === "string") {
-      name = name.toLowerCase();
-      if (name !== 'content-length') {
-        this._headers[name] = value;
+  set(nameOrDict: string | object, value?: string | string[]) {
+    if (typeof(nameOrDict) === "string") {
+      nameOrDict = nameOrDict.toLowerCase();
+      if (nameOrDict !== 'content-length') {
+        this._headers[nameOrDict] = value;
       }
 
     } else {
-      for (let _name in name) {
-        _name = _name.toLowerCase();
-        if (_name !== 'content-length') {
-          this._headers[_name] = name[_name];
+      for (let originalName in nameOrDict) {
+        const name = originalName.toLowerCase();
+        if (name !== 'content-length') {
+          this._headers[name] = nameOrDict[originalName];
         }
       }
     }
