@@ -1,6 +1,6 @@
 {
   "name": "bun-serve-express",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Express API compatibility for Bun.serve()",
   "types": "build/index.d.ts",
   "main": "build/index.js",

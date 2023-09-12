@@ -1,7 +1,7 @@
 import Bun from "bun";
-import { Application } from "./Application";
+import { Application, ApplicationOptions } from "./Application";
 
-export default function<T=any> (app: Partial<Bun.Serve<T>> = {}) {
+export default function<T=any> (app: ApplicationOptions<T> = {}) {
   return new Application<T>(app);
 }
 
