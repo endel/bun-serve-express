@@ -1,0 +1,180 @@
+html
+  head
+    style
+      include style.css
+  body
+    a(href="?code=" + code)
+       button(type="button") Refresh
+    a(href="/admin?code=" + code)
+       button(type="button") Room List
+    a(href="/rooms/" + room.roomId + "/reload?code=" + code)
+      button(type="button") Reload
+    ul
+      li Map Name: #{room.map.name}
+      li Chosen Rooms: #{room.map.keyRoomNames.join()}
+      li Elapsed Time: #{Math.round(room.serverTime / 1000 / 60)}m #{Math.round(room.serverTime / 1000 % 60)}s
+      li State: #{room.matchState} - (1 Lobby, 2 Prestart, 3 Start, 4 Playing, 5 Finish)
+      li Max Clients: #{room.maxClients} &nbsp;&nbsp;&nbsp; Team Size: #{room.map.config.teamSize}
+      li Team 1: Room: #{room.teamProgressTrackers[0].getCurrentRoom()} Progress: #{Math.round(room.teamProgressTrackers[0].getRoomProgress(room.enemies)*100)}%
+      li Team 2: Room: #{room.teamProgressTrackers[1].getCurrentRoom()} Progress: #{Math.round(room.teamProgressTrackers[1].getRoomProgress(room.enemies)*100)}%
+    a(href="/rooms/" + room.roomId + "/startMatch?code=" + code)
+      button(type="button") Start Match
+    a(href="/rooms/" + room.roomId + "/team1WinMatch?code=" + code)
+      button(type="button") Team 1 Win Match
+    a(href="/rooms/" + room.roomId + "/team2WinMatch?code=" + code)
+      button(type="button") Team 2 Win Match
+    a(href="/rooms/" + room.roomId + "/tieMatch?code=" + code)
+      button(type="button") Tie Match
+    a(href="/rooms/" + room.roomId + "/incteam?code=" + code)
+      button(type="button") Increase Team Size
+    a(href="/rooms/" + room.roomId + "/decteam?code=" + code)
+      button(type="button") Decrease Team Size
+    a(href="/rooms/" + room.roomId + "/toggleBrainLogs?code=" + code)
+      button(type="button") #{room.brainFactory.logsHidden ? "Show" : "Hide"} Brain Logs
+    h2 Players
+    span
+      a(href="/rooms/" + room.roomId + "/spawnBotTeam1?code=" + code)
+        button(type="button") Add Bot Team 1
+      a(href="/rooms/" + room.roomId + "/spawnBotTeam2?code=" + code)
+        button(type="button") Add Bot Team 2
+      a(href="/rooms/" + room.roomId + "/spawnBots?code=" + code)
+        button(type="button") Fill with bots
+    table(cellpadding=10)
+      tr
+      for i in [0,1]
+        td(valign='top')
+          h3 Team #{i + 1}
+          ul
+          for player in Array.from(room.players.values())
+            if player.getTeam() == i
+              li #{player.name}&nbsp;
+                span
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/kill?code=" + code)
+                    button(type="button") Kill
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/kill?seconds=5&code=" + code)
+                    button(type="button") Kill 5 Sec
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/invincible?code=" + code)
+                    button(type="button") Invincible
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/nextlevel?code=" + code)
+                    button(type="button") Add Level
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/maxlevel?code=" + code)
+                    button(type="button") Max Level
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/portal?code=" + code)
+                    button(type="button") Portal
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/cooldown?code=" + code)
+                    button(type="button") No Cooldown
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/potioncooldown?code=" + code)
+                    button(type="button") No Cooldown Potion
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/damage?code=" + code)
+                    button(type="button") Max Damage
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/switchteams?code=" + code)
+                    button(type="button") Switch Teams
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/reconnect?code=" + code)
+                    button(type="button") Force Reconnect
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/warpspawn?code=" + code)
+                    button(type="button") Warp to Spawn
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/buff5?code=" + code)
+                    button(type="button") Add Buff 5s
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/buff30?code=" + code)
+                    button(type="button") Add Buff 30s
+                  a(href="/rooms/" + room.roomId + "/player/" + player.id + "/force-stuck?code=" + code)
+                    button(type="button") Force Stuck
+                  form(action="/rooms/" + room.roomId + "/player/" + player.id + "/setDamage?code=" + code, method="get")
+                    button(type="submit") Set Damage
+                    input(type="text", id="damage", name="damage")
+                  form(action="/rooms/" + room.roomId + "/player/" + player.id + "/setHealth?code=" + code, method="get")
+                    button(type="submit") Set Health
+                    input(type="text", id="health", name="health")
+                  form(action="/rooms/" + room.roomId + "/player/" + player.id + "/setMaxHealth?code=" + code, method="get")
+                    button(type="submit") Set Max Health
+                    input(type="text", id="maxHealth", name="maxHealth")
+                  form(action="/rooms/" + room.roomId + "/player/" + player.id + "/setArmor?code=" + code, method="get")
+                    button(type="submit") Set Armor
+                    input(type="text", id="armor", name="armor")
+                  form(action="/rooms/" + room.roomId + "/player/" + player.id + "/applyPerk?code=" + code, method="get")
+                    button(type="submit") Award Perk
+                    input(type="text", id="perkName", name="perkName")
+                //- span &nbsp;Attack:
+                //- a(href="/rooms/" + room.roomId + "/player/" + player.id + "/attackAuto")
+                //-   button(style=(player.autoAttackMode == 1 ? "" : "background-color:grey")) Auto
+                //- a(href="/rooms/" + room.roomId + "/player/" + player.id + "/attackTap")
+                //-   button(style=(player.autoAttackMode == 2 ? "" : "background-color:grey")) Tap
+                //- a(href="/rooms/" + room.roomId + "/player/" + player.id + "/attackStand")
+                //-   button(style=(player.autoAttackMode == 3 ? "" : "background-color:grey")) Stand
+                ul
+                  li Team: #{player.getTeam() + 1}
+                  li Current Room: #{player.getLayer() + 1}
+                  li Position: #{player.x}, #{player.z}
+                  li SpawnPoint: #{player.spawnPoint.x}, #{player.spawnPoint.y}
+                  li Level: #{player.level + 1}
+                  li Player Level: #{player.playerLevel}
+                  li Weapon Level: #{player.weaponLevel}
+                  li XP: earned #{player.collectableXp} collected xp #{player.xp}
+                  li XPToNext: #{player.getXPToNextLevel()}
+                  li Weapon: #{player.weaponConfig.name}
+                  li HP: #{player.health}/#{player.getMaxHealth()} (base max health: #{player.getUnmodifiedMaxHealth()})
+                  li Base Damage: #{player.damage}
+                  li Outgoing Auto Damage Multipliers: #{Array.from(Array(player.abilities.length - 2).keys()).map(idx => `Auto${idx + 1}: ${player.getOutgoingDamageMultiplier(idx + 2)}`).join(" -> ")}
+                  li Final Auto Damage: #{Array.from(Array(player.abilities.length - 2).keys()).map(idx => `Auto${idx + 1}: ${player.getDamage(idx + 2)}`).join(" -> ")}
+                  li Outgoing Special Ability Multiplier: #{player.getOutgoingDamageMultiplier(0)}
+                  li Final Special Ability Damage: #{player.getDamage(0)}
+                  li Armor: #{player.getArmor()}
+                  li Speed: #{player.getAttackRange()}
+                  li Attack Range: #{player.getSpeed()}
+                  li Is Dead: #{player.isDead()}
+                  li Is Respawning: #{player.respawning}
+                  li Time-to-Respawn: #{player.timeToRespawn}
+                  li Status Effects: #{player.nonPersistentStatusEffectReport}
+                  li Persistent Status Effects: #{player.persistentStatusEffectReport}
+                  li Perks Chosen: #{player.perkPool.getChoosenPerkNames().join(", ")}
+    h2 Portals
+    table
+      tr
+      for i in [0,1]
+        td
+          h3 Side #{i + 1}
+          ul
+            for portal in Array.from(room.map.portalsMap.values())
+              if portal.roomId == i
+                li #{portal.config.name} - Side #{portal.getLayer() + 1} (#{portal.id}) - #{portal.isActive() ? "Active" : "Deactivated"} - #{Math.round(portal.activeTime/1000)}s&nbsp;
+                  a(href="/rooms/" + room.roomId + "/portal/" + portal.id + "/activate?code=" + code)
+                    button(type="button") Activate
+    h2 Spawners
+    table
+      tr
+      for i in [0,1]
+        td(valign='top')
+          h3 Side #{i + 1}
+          ul(class='spawner')
+            for spawner in Array.from(room.map.spawnersMap.values())
+              if spawner.roomId == i
+                div(class='title')
+                  li(class='spawner') <h1>#{spawner.name} <br> Side #{spawner.roomId + 1} (#{spawner.id}) <br> #{spawner.isComplete() ? "Destroyed" : "Active - Wave " + spawner.waveNdx + 1}<br>
+                    if !spawner.isComplete()
+                      <br>
+                        a(href="/rooms/" + room.roomId + "/spawner/" + spawner.id + "/killwave?code=" + code)
+                          button(class="destroy" type="button") Kill Wave
+                        a(href="/rooms/" + room.roomId + "/spawner/" + spawner.id + "/destroy?code=" + code)
+                          button(class="destroy" type="button") Destroy Spawner
+                      <br>
+                    <br>
+                    ul(class='enemies')
+                      for enemy in Array.from(room.enemies.values())
+                        if enemy.wave != null && enemy.wave.spawner == spawner && !enemy.isDead()
+                          include enemy.pug
+    h2 Roaming Enemies
+    table
+      tr
+      for i in [0,1]
+        td(valign='top')
+          h3 Side #{i + 1}
+          <br>
+            a(href="/rooms/" + room.roomId + "/killall" + i + "?code=" + code)
+              button(class="destroy" type="button") Kill All
+          <br>
+          ul(class='enemies')
+            for enemy in Array.from(room.enemies.values())
+              if enemy.layer == i
+                if enemy.wave == null && !enemy.isDead()
+                  include enemy.pug
+

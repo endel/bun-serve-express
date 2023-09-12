@@ -1,0 +1,43 @@
+{
+  "name": "bun-serve-express",
+  "version": "1.0.0",
+  "description": "Express API compatibility for Bun.serve()",
+  "types": "build/index.d.ts",
+  "main": "build/index.js",
+  "scripts": {
+    "prepublishOnly": "tsc && bun build --target=bun ./src/index.ts --outdir ./build"
+  },
+  "author": "Endel Dreyer",
+  "files": [
+    "build",
+    "README.md"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/endel/bun-express.git"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.12",
+    "@types/methods": "^1.1.1",
+    "@types/mime": "^2.0.3",
+    "@types/path-to-regexp": "^1.7.0",
+    "@types/serve-index": "^1.9.0",
+    "axios": "^1.4.0",
+    "bun-types": "^1.0.1",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "pug": "^3.0.2",
+    "serve-index": "^1.9.1",
+    "serve-static": "^1.14.1",
+    "ts-node": "^10.0.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.3.4"
+  },
+  "dependencies": {
+    "http-status-codes": "^2.1.4",
+    "mime": "^2.5.2"
+  }
+}
