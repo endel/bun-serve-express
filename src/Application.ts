@@ -7,12 +7,6 @@ import express, { NextFunction, application } from "express";
 import { IncomingMessage } from "./IncomingMessage";
 import { ServerResponse } from "./ServerResponse";
 
-function onAbort(req: IncomingMessage, res: ServerResponse) {
-  req.socket.readable = false;
-  res.finished = true;
-  res.aborted = true;
-}
-
 type RequestHandler = (req: IncomingMessage, res: ServerResponse, next?: NextFunction) => void;
 
 export type RenderCallback = (e: any, rendered?: string) => void;
