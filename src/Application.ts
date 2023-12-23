@@ -1,5 +1,5 @@
 /// <reference types="bun-types" />
-import Bun, { ServeOptions, TLSServeOptions, TLSWebSocketServeOptions, UnixServeOptions, UnixTLSServeOptions, UnixTLSWebSocketServeOptions, UnixWebSocketServeOptions, WebSocketServeOptions } from "bun";
+import Bun, { Serve } from "bun";
 
 import EventEmitter from "events";
 import express, { NextFunction, application } from "express";
@@ -12,17 +12,6 @@ type RequestHandler = (req: IncomingMessage, res: ServerResponse, next?: NextFun
 export type RenderCallback = (e: any, rendered?: string) => void;
 type EngineCallback = (path: string, options: object, callback: RenderCallback) => void;
 
-export type ApplicationOptions<T> = Partial<
-  ServeOptions
-  & TLSServeOptions
-  & UnixServeOptions
-  & UnixTLSServeOptions
-  & WebSocketServeOptions<T>
-  & TLSWebSocketServeOptions<T>
-  & UnixWebSocketServeOptions<T>
-  & UnixTLSWebSocketServeOptions<T>
->;
-
 export class Application<T=any> extends EventEmitter {
   protected bunServer: Bun.Server;
 
@@ -31,7 +20,7 @@ export class Application<T=any> extends EventEmitter {
 
   private _router: any;
 
-  constructor(protected bunServeOptions: ApplicationOptions<T>) {
+  constructor(protected bunServeOptions: Serve<T>) {
     super();
 
     this.init();
