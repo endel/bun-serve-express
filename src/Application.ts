@@ -165,7 +165,7 @@ export class Application<T=any> extends EventEmitter {
         const url = new URL(req.url);
 
         if (req.headers.get("upgrade")) {
-          server.upgrade(req, { data: { url } });
+          server.upgrade(req, { data: { url, headers: req.headers, } });
           return undefined;
         }
 
