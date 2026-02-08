@@ -1,12 +1,12 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "esnext",
         "outDir": "build",
         "moduleResolution": "node",
         "declaration": true,
         "emitDeclarationOnly": true,
         "skipLibCheck": true,
-        "downlevelIteration": true, /*only for tests*/
+        "downlevelIteration": true,
         "allowSyntheticDefaultImports": true,
         "noImplicitAny": false,
         "esModuleInterop": true,

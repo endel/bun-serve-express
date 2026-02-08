@@ -2,15 +2,13 @@
 import Bun, { ServeOptions, TLSServeOptions, TLSWebSocketServeOptions, UnixServeOptions, UnixTLSServeOptions, UnixTLSWebSocketServeOptions, UnixWebSocketServeOptions, WebSocketServeOptions } from "bun";
 
 import EventEmitter from "events";
-import express, { NextFunction, application } from "express";
+import express, { application } from "express";
 
 import { IncomingMessage } from "./IncomingMessage";
 import { ServerResponse } from "./ServerResponse";
-
-type RequestHandler = (req: IncomingMessage, res: ServerResponse, next?: NextFunction) => void;
+import { mixin } from "./utils";
 
 export type RenderCallback = (e: any, rendered?: string) => void;
-type EngineCallback = (path: string, options: object, callback: RenderCallback) => void;
 
 export type ApplicationOptions<T> = Partial<
   ServeOptions
@@ -23,138 +21,35 @@ export type ApplicationOptions<T> = Partial<
   & UnixTLSWebSocketServeOptions<T>
 >;
 
-export class Application<T=any> extends EventEmitter {
+export class Application<T=any> extends EventEmitter implements express.Application {
   protected bunServer: Bun.Server;
 
   protected request = express.request;
   protected response = express.response;
 
-  private _router: any;
-
   constructor(protected bunServeOptions: ApplicationOptions<T>) {
     super();
 
-    this.init();
-  }
+    // Copy all Express 5 application methods onto this instance.
+    // This includes: get, post, put, delete, use, set, enable, enabled,
+    // engine, render, route, param, all, etc.
+    mixin(this, application);
 
-  protected init() {
-    // perform original express initialization
+    // Perform original Express 5 initialization.
+    // This sets up settings, cache, engines, and creates a lazy router getter.
     application.init.apply(this, arguments);
   }
 
-  protected handle(req, res, callback?) {
+  // Note: Express 5's init() creates this.router as a lazy getter via
+  // Object.defineProperty. Express 5's handle() uses this.router directly
+  // and handles expressInit (x-powered-by, req/res cross-refs, prototype
+  // setup) inline. No lazyrouter() override is needed.
+
+  protected handle(req: any, res: any, callback?: any) {
     (express.application as any).handle.call(this, req, res, callback);
   }
 
-  protected lazyrouter() {
-    // DISCARDED: original lazyrouter auto-initializes "expressInit", which
-    // overrides the prototype of request/response, which we can't let happen
-    // (express.application as any).lazyrouter.apply(this, arguments);
-
-    if (!this._router) {
-      this._router = express.Router({
-        caseSensitive: this.enabled('case sensitive routing'),
-        strict: this.enabled('strict routing')
-      });
-
-      this._router.use(express.query(this.get('query parser fn')));
-
-      const app = this;
-      this._router.use(function expressInit(req, res, next) {
-        if (app.enabled('x-powered-by')) res.setHeader('X-Powered-By', 'Express');
-        req.res = res;
-        res.req = req;
-        req.next = next;
-
-        // setPrototypeOf(req, app.request)
-        // setPrototypeOf(res, app.response)
-
-        res.locals = res.locals || Object.create(null);
-
-        next();
-      });
-    }
-
-    return ;
-  }
-
-  public engine(ext: string, fn: EngineCallback) {
-    application.engine.apply(this, arguments);
-  }
-
-  public set(setting, val) {
-    return application.set.apply(this, arguments);
-  }
-
-  public enable(setting: string) {
-    return application.enable.call(this, setting);
-  }
-
-  public enabled(setting: string) {
-    return application.enabled.call(this, setting);
-  }
-
-  public render(name: string, options: any, callback: RenderCallback) {
-    return application.render.apply(this, arguments);
-  }
-
-  public use(handler: RequestHandler)
-  public use(path: string, handler: RequestHandler)
-  public use(path: string, router: express.Router)
-  public use(path: string, ...handlers: Array<express.Router | RequestHandler>)
-  public use(path: string, any: any)
-  public use(any: any)
-  public use(pathOrHandler: string | RequestHandler, ...handlersOrRouters: Array<RequestHandler | express.Router>) {
-    express.application.use.apply(this, arguments);
-    return this;
-  }
-
-  public get(path: string, ...handlers: RequestHandler[]) {
-    return express.application.get.apply(this, arguments);
-  }
-
-  public post(path: string, ...handlers: RequestHandler[]) {
-    express.application.post.apply(this, arguments);
-    return this;
-  }
-
-  public patch(path: string, ...handlers: RequestHandler[]) {
-    express.application.patch.apply(this, arguments);
-    return this;
-  }
-
-  public options(path: string, ...handlers: RequestHandler[]) {
-    express.application.options.apply(this, arguments);
-    return this;
-  }
-
-  public put(path: string, ...handlers: RequestHandler[]) {
-    express.application.put.apply(this, arguments);
-    return this;
-  }
-
-  /**
-   * @deprecated
-   */
-  public del(path: string, ...handlers: RequestHandler[]) {
-    return this.delete.apply(this, arguments);
-  }
-
-  public delete(path: string, ...handlers: RequestHandler[]) {
-    express.application.delete.apply(this, arguments);
-    return this;
-  }
-
-  public head(path: string, ...handlers: RequestHandler[]) {
-    express.application.head.apply(this, arguments);
-    return this;
-  }
-
-  public all(path: string, ...handlers: RequestHandler[]) {
-    express.application.all.apply(this, arguments);
-    return this;
-  }
-
+  // @ts-ignore
   public listen(port?: number, cb?: () => void) {
     const self = this;
 
@@ -181,6 +76,10 @@ export class Application<T=any> extends EventEmitter {
           }
         }
 
+        // Mark request as complete so that on-finished/finalhandler
+        // knows the request body has been fully consumed.
+        request.complete = true;
+
         self.handle(request, response);
         const res = await response['getBunResponse']();
 
@@ -197,9 +96,4 @@ export class Application<T=any> extends EventEmitter {
     };
   }
 
-  protected defaultConfiguration() {
-    application.defaultConfiguration.apply(this);
-  }
-
 }
-
