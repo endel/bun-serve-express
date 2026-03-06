@@ -488,6 +488,18 @@ describe("Express 5 API Compatibility", () => {
       expect((await http.get(`${currentURL}/router/index.html`)).data).toBe("Hello world");
     });
 
+    it("should serve static image with correct content-type and intact binary data", async () => {
+      app.use(express.static(path.resolve(__dirname, "static")));
+
+      const response = await http.get(`${currentURL}/image.png`, { responseType: 'arraybuffer' });
+      expect(response.headers['content-type']).toBe("image/png");
+
+      const original = fs.readFileSync(path.resolve(__dirname, "static/image.png"));
+      const received = Buffer.from(response.data);
+      expect(received.length).toBe(original.length);
+      expect(received.equals(original)).toBe(true);
+    });
+
     it("urls should always start with /", async () => {
       app.use(express.static(path.resolve(__dirname, "static")));
 

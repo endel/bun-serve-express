@@ -22,7 +22,7 @@ export class ServerResponse extends OutgoingMessage {
   protected outputData: any[] = [];
   protected outputSize?: number;
 
-  private _body: string = "";
+  private _body: string | Buffer = "";
 
   // This will be set in the constructor as an own property
   public getBunResponse: () => Promise<Response>;
@@ -62,16 +62,19 @@ export class ServerResponse extends OutgoingMessage {
         this.outputData.push({ data: chunk, encoding: encoding || 'utf-8', callback: () => { } });
       }
 
-      if (this.outputData.length === 1 && Buffer.isBuffer(this.outputData[0].data)) {
-        this._body = this.outputData[0].data;
-      } else if (encoding && chunk) {
-        this._body = Buffer.from(chunk, encoding).toString();
+      const hasBuffers = this.outputData.some(d => Buffer.isBuffer(d.data));
+
+      if (hasBuffers) {
+        this._body = Buffer.concat(this.outputData.map(d => {
+          if (Buffer.isBuffer(d.data)) return d.data;
+          if (typeof d.data === 'string') return Buffer.from(d.data, d.encoding || 'utf-8');
+          return Buffer.from(String(d.data));
+        }));
       } else {
         this._body = this.outputData.map(d => {
-            if (typeof d.data === 'string') return d.data;
-            if (Buffer.isBuffer(d.data)) return d.data.toString();
-            return String(d.data);
-          }).join("");
+          if (typeof d.data === 'string') return d.data;
+          return String(d.data);
+        }).join("");
       }
 
       this.finished = true;
