@@ -62,13 +62,17 @@ export class ServerResponse extends OutgoingMessage {
         this.outputData.push({ data: chunk, encoding: encoding || 'utf-8', callback: () => { } });
       }
 
-      this._body = (encoding && chunk)
-        ? Buffer.from(chunk, encoding).toString()
-        : this.outputData.map(d => {
+      if (this.outputData.length === 1 && Buffer.isBuffer(this.outputData[0].data)) {
+        this._body = this.outputData[0].data;
+      } else if (encoding && chunk) {
+        this._body = Buffer.from(chunk, encoding).toString();
+      } else {
+        this._body = this.outputData.map(d => {
             if (typeof d.data === 'string') return d.data;
             if (Buffer.isBuffer(d.data)) return d.data.toString();
             return String(d.data);
           }).join("");
+      }
 
       this.finished = true;
       this.emit('finish');
@@ -163,6 +167,7 @@ export class ServerResponse extends OutgoingMessage {
           : outHeaders[name].toString();
       }
 
+      // @ts-ignore
       return new Response(this._body, {
         status: this.statusCode,
         statusText: ReasonPhrases[StatusCodes[this.statusCode]],

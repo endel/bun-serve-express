@@ -158,6 +158,65 @@ describe("Express 5 API Compatibility", () => {
       expect(response["set-cookie"]![0]).toMatch(/^\s?my-cookie=\;/);
     })
 
+    it("set() Content-Type header with res.end()", async () => {
+      app.get("/content-type", (req, res) => {
+        res.set("Content-Type", "image/png");
+        res.end("fake-image-data");
+      });
+
+      const response = await http.get(`${currentURL}/content-type`, { responseType: 'text' });
+      expect(response.headers['content-type']).toBe("image/png");
+      expect(response.data).toBe("fake-image-data");
+    });
+
+    it("set() Content-Type before sending binary Buffer", async () => {
+      app.get("/binary", (req, res) => {
+        const buffer = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a]);
+        res.set("Content-Type", "image/png");
+        res.end(buffer);
+      });
+
+      const response = await http.get(`${currentURL}/binary`, { responseType: 'arraybuffer' });
+      expect(response.headers['content-type']).toBe("image/png");
+      const bytes = new Uint8Array(response.data);
+      expect(bytes[0]).toBe(0x89);
+      expect(bytes[1]).toBe(0x50);
+    });
+
+    it("setHeader() directly", async () => {
+      app.get("/setheader", (req, res) => {
+        res.setHeader("X-Custom", "custom-value");
+        res.setHeader("Content-Type", "text/plain");
+        res.end("hello");
+      });
+
+      const response = await http.get(`${currentURL}/setheader`);
+      expect(response.headers['x-custom']).toBe("custom-value");
+      expect(response.headers['content-type']).toBe("text/plain");
+    });
+
+    it("writeHead() with status and headers", async () => {
+      app.get("/writehead", (req, res) => {
+        res.writeHead(201, { "X-Custom": "value", "Content-Type": "text/plain" });
+        res.end("created");
+      });
+
+      const response = await http.get(`${currentURL}/writehead`);
+      expect(response.status).toBe(201);
+      expect(response.headers['x-custom']).toBe("value");
+      expect(response.headers['content-type']).toBe("text/plain");
+    });
+
+    it("header() alias for set()", async () => {
+      app.get("/header-alias", (req, res) => {
+        res.header("X-Via-Header", "yes");
+        res.end("ok");
+      });
+
+      const response = await http.get(`${currentURL}/header-alias`);
+      expect(response.headers['x-via-header']).toBe("yes");
+    });
+
     it("render()", async () => {
       app.set('views', path.join(__dirname, 'views'));
       app.set('view engine', 'html');
